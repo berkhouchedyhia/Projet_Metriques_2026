@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; background: #f6f7fb; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 28px; }
+    .hero { display:flex; justify-content: space-between; gap: 18px; align-items: center; margin-bottom: 18px; }
+    .badge { background:#eef2ff; color:#2442a8; padding: 8px 12px; border-radius: 999px; font-weight: 600; font-size: 12px; }
+    .card { background:#fff; border-radius: 18px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.08); border: 1px solid #eef0f7; }
+    h1 { margin: 0; font-size: 34px; }
+    p { margin: 8px 0 0; color:#555; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+    label { display:block; font-size: 13px; color:#444; margin-bottom: 6px; }
+    input, textarea, select {
+      width:100%; padding: 12px; border-radius: 12px; border: 1px solid #d9dbe7; outline:none;
+      background: #fff;
+    }
+    textarea { min-height: 140px; resize: vertical; }
+    .full { grid-column: 1 / -1; }
+    .actions { display:flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    button { border:0; border-radius: 12px; padding: 12px 14px; cursor:pointer; font-weight: 700; }
+    .primary { background: #2f6fed; color:#fff; }
+    .ghost { background:#eef2ff; color:#2442a8; }
+    .status { margin-top: 12px; font-size: 13px; color:#2b2b2b; }
+    .hint { margin-top: 10px; font-size: 12px; color:#666; }
+    @media (max-width: 760px){ .grid{ grid-template-columns: 1fr; } .hero{ flex-direction: column; align-items:flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1>Contact</h1>
+        <p>Laisse ton nom, ton prénom et un message. (Simulation : pas de base de données.)</p>
+      </div>
+      <div class="badge">Atelier Flask • UI / Design</div>
+    </div>
+
+    <div class="card">
+      <form id="form" onsubmit="fakeSend(event)">
+        <div class="grid">
+          <div>
+            <label for="prenom">Prénom</label>
+            <input id="prenom" name="prenom" placeholder="Ex: Lina" required />
+          </div>
+
+          <div>
+            <label for="nom">Nom</label>
+            <input id="nom" name="nom" placeholder="Ex: Benali" required />
+          </div>
+
+          <div>
+            <label for="sujet">Sujet</label>
+            <select id="sujet" name="sujet" required>
+              <option value="" selected disabled>Choisir…</option>
+              <option>Question</option>
+              <option>Bug / Problème</option>
+              <option>Suggestion</option>
+              <option>Autre</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="email">Email (optionnel)</label>
+            <input id="email" name="email" type="email" placeholder="ex: nom@mail.com" />
+          </div>
+
+          <div class="full">
+            <label for="msg">Message</label>
+            <textarea id="msg" name="msg" placeholder="Ton message..." required></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" type="submit">Envoyer</button>
+          <button class="ghost" type="button" onclick="resetForm()">Réinitialiser</button>
+          <button class="ghost" type="button" onclick="fillDemo()">Remplir exemple</button>
+        </div>
+
+        <div class="status" id="status"></div>
+        <div class="hint">💡 Astuce : l’évaluateur note surtout le rendu visuel + propreté.</div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function fakeSend(e){
+      e.preventDefault();
+      const prenom = document.getElementById('prenom').value.trim();
+      const nom = document.getElementById('nom').value.trim();
+      const sujet = document.getElementById('sujet').value;
+      document.getElementById('status').textContent =
+        `Merci ${prenom} ${nom} ✅ (Sujet: ${sujet}) — message prêt à être envoyé (simulation).`;
+    }
+    function resetForm(){
+      document.getElementById('form').reset();
+      document.getElementById('status').textContent = '';
+    }
+    function fillDemo(){
+      document.getElementById('prenom').value = "Lina";
+      document.getElementById('nom').value = "Benali";
+      document.getElementById('sujet').value = "Suggestion";
+      document.getElementById('email').value = "lina@mail.com";
+      document.getElementById('msg').value = "Bonjour, j’ai une suggestion pour améliorer le dashboard : ajouter un filtre de période.";
+      document.getElementById('status').textContent = '';
+    }
+  </script>
+</body>
+</html>

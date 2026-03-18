@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Histogramme — Paris</title>
+
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
+    #chart { width: 100%; height: 520px; }
+    #status { margin-top: 12px; white-space: pre-wrap; color: #555; }
+  </style>
+</head>
+
+<body>
+  <h1>Températures — Paris (7 jours)</h1>
+  <div id="chart"></div>
+  <div id="status"></div>
+
+  <script>
+    google.charts.load('current', { packages: ['corechart'] });
+    google.charts.setOnLoadCallback(init);
+
+    let cachedRows = null;
+
+    async function init() {
+      try {
+        const rows = await fetchDaily();
+        cachedRows = rows;
+        drawChart(rows);
+
+        window.addEventListener('resize', () => {
+          if (cachedRows) drawChart(cachedRows);
+        });
+      } catch (err) {
+        showStatus("Erreur: " + (err?.message || err));
+        console.error(err);
+      }
+    }
+
+    async function fetchDaily() {
+      const res = await fetch('/temperatures/daily', { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error(`HTTP ${res.status} sur /temperatures/daily`);
+      const json = await res.json();
+
+      // rows = [ ["16/02", 9.2], ...]
+      return json.map(d => [formatFR(d.date), Number(d.tmax)]);
+    }
+
+    function formatFR(yyyy_mm_dd) {
+      const [y,m,d] = yyyy_mm_dd.split('-').map(Number);
+      return String(d).padStart(2,'0') + '/' + String(m).padStart(2,'0');
+    }
+
+    function drawChart(rows) {
+      const data = new google.visualization.DataTable();
+      data.addColumn('string', 'Jour');
+      data.addColumn('number', 'Temp max (°C)');
+      data.addRows(rows);
+
+      const options = {
+        title: 'Température max à Paris (7 jours)',
+        legend: { position: 'none' },
+        vAxis: { title: '°C' },
+        bar: { groupWidth: '70%' }
+      };
+
+      const chart = new google.visualization.ColumnChart(document.getElementById('chart'));
+      chart.draw(data, options);
+
+      showStatus(`OK — ${rows.length} jours chargés depuis /temperatures/daily`);
+    }
+
+    function showStatus(msg) {
+      document.getElementById('status').textContent = msg;
+    }
+  </script>
+</body>
+</html>

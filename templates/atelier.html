@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Atelier — Humidité Versailles</title>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; background:#f6f7fb; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card { background:#fff; border:1px solid #eef0f7; border-radius: 18px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+    .row { display:flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+    .muted { color:#555; }
+    #gauge { width: 420px; height: 240px; }
+    pre { margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Atelier — Humidité actuelle à Versailles</h1>
+    <p class="muted">Graphique différent (Gauge) — ni line chart, ni histogramme ✅</p>
+
+    <div class="row">
+      <div class="card">
+        <div id="gauge"></div>
+        <pre id="status" class="muted"></pre>
+      </div>
+
+      <div class="card" style="flex:1; min-width:260px;">
+        <h3>Ce que tu démontres</h3>
+        <ul>
+          <li>API Flask: <code>/versailles/humidity</code></li>
+          <li>Page HTML: <code>/atelier</code></li>
+          <li>Fetch AJAX + affichage Gauge Google Charts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    google.charts.load('current', { packages: ['gauge'] });
+    google.charts.setOnLoadCallback(init);
+
+    let chart, data, options;
+
+    async function init() {
+      data = google.visualization.arrayToDataTable([
+        ['Label', 'Value'],
+        ['Humidité %', 0]
+      ]);
+
+      options = { min: 0, max: 100, minorTicks: 5 };
+
+      chart = new google.visualization.Gauge(document.getElementById('gauge'));
+      chart.draw(data, options);
+
+      await refresh();
+      setInterval(refresh, 60000);
+    }
+
+    async function refresh() {
+      const status = document.getElementById('status');
+      try {
+        const res = await fetch('/versailles/humidity', { headers: { 'Accept': 'application/json' }});
+        if (!res.ok) throw new Error(`HTTP ${res.status} sur /versailles/humidity`);
+        const json = await res.json();
+
+        const val = Number(json.humidity);
+        data.setValue(0, 1, isFinite(val) ? val : 0);
+        chart.draw(data, options);
+
+        status.textContent = `OK — ${json.datetime || 'date inconnue'} — ${val}%`;
+      } catch (e) {
+        status.textContent = "Erreur: " + (e?.message || e);
+        console.error(e);
+      }
+    }
+  </script>
+</body>
+</html>
